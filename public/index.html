@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>USTC Blog of Xu Yi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="USTC Blog of Xu Yi">
+<meta property="og:url" content="http://home.ustc.edu.cn/~turambar/blog/index.html">
+<meta property="og:site_name" content="USTC Blog of Xu Yi">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="USTC Blog of Xu Yi">
+  
+    <link rel="alternate" href="/atom.xml" title="USTC Blog of Xu Yi" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/~turambar/blog/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/~turambar/blog/" id="logo">USTC Blog of Xu Yi</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/~turambar/blog/">Home</a>
+        
+          <a class="main-nav-link" href="/~turambar/blog/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://home.ustc.edu.cn/~turambar/blog"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main">
+  
+    <article id="post-dict-on-rofi" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/~turambar/blog/2017/07/18/dict-on-rofi/" class="article-date">
+  <time datetime="2017-07-18T06:54:08.000Z" itemprop="datePublished">2017-07-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/~turambar/blog/2017/07/18/dict-on-rofi/">Linux上类似Mac Spotlight的字典实现方案</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="笔者的初衷和工作环境"><a href="#笔者的初衷和工作环境" class="headerlink" title="笔者的初衷和工作环境"></a>笔者的初衷和工作环境</h2><p>我在Linux环境中使用StarDict这款字典，一直以来都没有遇到什么问题，StarDict的取词功能也很方便，虽然已经很久没有维护的样子，还是能找到很多可用的字典。美中不足的是查词还是需要唤出主界面，笔者一直觊觎Mac上Spotlight提供的字典功能，希望在Linux上也能有一种界面简洁至极的查词解决方案。后来我了解到StarDict有命令行版本sdcv (StarDict Console Version ?)，于是很长时间内就采用了快捷键唤出终端模拟器、输入sdcv查词再Ctrl+D退出的解决方案（假装比调出主界面少按几个快捷键）。但是terminator（笔者常用的终端模拟器）还是比不上Spotlight好看。</p>
+<p>当初我使用i3wm的时候接触到rofi这个工具，使用效果大概是这样的（图片来自Google）。<br><img src="/~turambar/blog/2017/07/18/dict-on-rofi/rofi_demo.png" alt="rofi demostration" title="rofi demostration"><br>这个东西的功能类似于dmenu，就是把输入组织成多项显示出来，具体介绍也可以去官网了解<a href="https://davedavenport.github.io/rofi/" target="_blank" rel="external">rofi</a>。总之rofi的界面基本满足我的审美要求，唤出和退出也很方便，一个快捷键和Esc足矣。本文将介绍怎么用rofi和sdcv配置一个好用+美观的查词工具。</p>
+<p>顺便介绍一下笔者现在的工作环境，当然一张screenfetch截图足矣。<br><img src="/~turambar/blog/2017/07/18/dict-on-rofi/screenfetch.png" alt="screenfetch" title="screenfetch"><br>我的rofi版本是1.3.1，sdcv版本是0.5.0-beta2。</p>
+<h2 id="核心原理"><a href="#核心原理" class="headerlink" title="核心原理"></a>核心原理</h2><p>实现这个小工具的关键在于rofi的使用。读者可以运行一下下面命令体验一下rofi的功能。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">echo</span> -e <span class="string">"Option 1\nOption 2\nOption 2\n"</span> | rofi -dmenu <span class="comment"># dmenu工作模式</span></div><div class="line">rofi -show run <span class="comment"># 用作应用选单</span></div></pre></td></tr></table></figure></p>
+<p>阅读rofi文档可以知道rofi可以用<code>-modi</code>选项指定运行的程序，比如下面的例子。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">rofi -modi ls:<span class="string">'ls /'</span> -show ls <span class="comment"># 格式 -modi &lt;name&gt;:&lt;script&gt;</span></div></pre></td></tr></table></figure></p>
+<p>在笔者的环境下用rofi的时候并不能愉快的引用bash环境变量，比如<code>rofi -modi ls:&#39;ls $HOME&#39; -show ls</code>就不能正常运行。</p>
+<p>那么要实现查词功能我们只要采用下面命令就可以啦。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">rofi -modi sdcv:sdcv -show sdcv</div></pre></td></tr></table></figure></p>
+<p>效果大概是这个样子<br><img src="/~turambar/blog/2017/07/18/dict-on-rofi/demo1.png" alt="dictionary demostration" title="dictionary demostration"></p>
+<p>如果读者成功实(bei)现(keng)就会发现如果查词的时候输入字典中不存在的单词，rofi就会卡住，甚至整个桌面环境都卡住，必须切tty把rofi杀死。这是因为sdcv在获得不存在的单词时会进入交互模式，一直等待输出，而rofi这个东西优先级还是很高的，于是就无法进行其他图形界面操作啦。解决方法很简单，只要用sdcv的<code>-n</code>选项禁用交互就可以了。命令如下。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">rofi -modi sdcv:<span class="string">'sdcv -n'</span> -show sdcv</div></pre></td></tr></table></figure></p>
+<h2 id="个性化和快捷键配置"><a href="#个性化和快捷键配置" class="headerlink" title="个性化和快捷键配置"></a>个性化和快捷键配置</h2><p>读者在自己的电脑上运行上面代码效果可能与上面的图相差较大，这是由rofi主题决定的。rofi的一个优点就是颜色配置的方便，可以参考官网的主题。<br><a href="https://davedavenport.github.io/rofi/p05-Themes.html" target="_blank" rel="external">https://davedavenport.github.io/rofi/p05-Themes.html</a><br>配置需要写入<code>$HOME/.Xresources</code>中从而在登录时启用，或者用<code>xrdb -merge ~/.Xresources</code>手动载入。还可以通过rofi命令的一些选项改变显示的字体和行数。我的命令是这样的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">rofi -modi sdcv:&apos;sdcv -n&apos; -show sdcv -font &apos;mono 18&apos; -lines 3</div></pre></td></tr></table></figure></p>
+<p>如何配置快捷键我这里就不解释了，但是我想说一下我在配置快捷键时遇到过没有显示的问题。通过重定向输出得到Lacale设置没能成功载入的错误信息，所以我最后在快捷键中采用的命令如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">/bin/bash -c &quot;source /etc/profile; /usr/bin/rofi -modi sdcv:&apos;sdcv -n&apos; -show sdcv&quot;</div></pre></td></tr></table></figure></p>
+<p>顺便提一下rofi可以支持多个应用并用Tab‘键切换，所以有兴趣的朋友可以自己试着实现更多的功能。</p>
+<p>Happy Hacking :)</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://home.ustc.edu.cn/~turambar/blog/2017/07/18/dict-on-rofi/" data-id="cj59ft0bo0000p3wrx11ysles" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/~turambar/blog/tags/Linux-Fun/">Linux, Fun</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-hello-world" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/~turambar/blog/2017/07/18/hello-world/" class="article-date">
+  <time datetime="2017-07-18T06:34:21.933Z" itemprop="datePublished">2017-07-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/~turambar/blog/2017/07/18/hello-world/">Hello World</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="external">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="external">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="external">GitHub</a>.</p>
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo new <span class="string">"My New Post"</span></div></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="external">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo server</div></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="external">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo generate</div></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="external">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo deploy</div></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="external">Deployment</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://home.ustc.edu.cn/~turambar/blog/2017/07/18/hello-world/" data-id="cj59ft0bu0001p3wr54t4dsxi" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/~turambar/blog/tags/Linux-Fun/">Linux, Fun</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/~turambar/blog/tags/Linux-Fun/" style="font-size: 10px;">Linux, Fun</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/~turambar/blog/archives/2017/07/">July 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/~turambar/blog/2017/07/18/dict-on-rofi/">Linux上类似Mac Spotlight的字典实现方案</a>
+          </li>
+        
+          <li>
+            <a href="/~turambar/blog/2017/07/18/hello-world/">Hello World</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 Xu Yi<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/~turambar/blog/" class="mobile-nav-link">Home</a>
+  
+    <a href="/~turambar/blog/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/~turambar/blog/fancybox/jquery.fancybox.css">
+  <script src="/~turambar/blog/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/~turambar/blog/js/script.js"></script>
+
+  </div>
+</body>
+</html>
